@@ -3,8 +3,8 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="/Users/skplanet/Documents/Projects/selendroid-standalone-0.7.0-with-dependencies.jar"/>
 	<classpathentry kind="lib" path="/Users/skplanet/adt-bundle-mac-x86_64-20131030/sdk/platforms/android-19/uiautomator.jar"/>
+	<classpathentry kind="lib" path="/Users/skplanet/Downloads/selendroid-standalone-0.8.0-SNAPSHOT-with-dependencies.jar"/>
 	<classpathentry kind="lib" path="/Users/skplanet/adt-bundle-mac-x86_64-20131030/sdk/platforms/android-19/android.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

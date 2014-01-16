@@ -10,46 +10,67 @@ import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Formatter;
 import java.util.List;
+import java.util.Observable;
+import java.util.concurrent.locks.Lock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class SelendroidServer implements Runnable{
+import android.R.bool;
+
+import com.ez2sugul.sample.util.Util;
+
+public class SelendroidServer implements Runnable {
 	private String selendroidPath = "/Users/skplanet/Documents/Projects";
 	private String targetPath = "/Users/skplanet/Documents/Projects/robotium";
-	private String selendroidBinary = "selendroid-standalone-0.7.0-with-dependencies.jar";
+	private String selendroidBinary = "selendroid-standalone-0.8.0-SNAPSHOT-with-dependencies.jar";
 	private String targetBinary = "com.skmnc.gifticon-1_debug.apk";
 	private InputStream serverIn;
 	private InputStream serverErr;
-	private Watcher hook;
 	private Process p;
 	private Process child = null;
 	private OutputStream serverOut;
 	private AbstractAut aut;
 	private boolean isServerOn;
+	private Pattern pattern;
+	private Matcher matcher;
+	private Lock lock;
+	private boolean isRunning;
 	
-	public SelendroidServer() {
+	public SelendroidServer(Lock lock) {
 		serverIn = null;
 		serverErr= null;
 		this.isServerOn = false;
+		this.lock = lock;
+		isRunning = true;
 	}
 	
 	public void setEnv() {
 		String androidHome = "export ANDROID_HOME=\"/Users/skplanet/adt-bundle-mac-x86_64-20131030/sdk\"";
 		String androidRoot = "export ANDROID_SDK_ROOT=\"/Users/skplanet/adt-bundle-mac-x86_64-20131030/sdk\"";
 		try {
-			execCommand(androidHome);
-			execCommand(androidRoot);
+			Util.execCommand(androidHome);
+			Util.execCommand(androidRoot);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
+	@Deprecated
 	private Process execCommand(String command) throws IOException  {
 		System.out.println(command);
 		p = Runtime.getRuntime().exec(command);
 		
 		return p;
+	}
+	
+	public boolean terminateServer() {
+		child.destroy();
+		isRunning = false;
+		return true;
 	}
 	
 	public void runSelendroidServer() {
@@ -61,7 +82,7 @@ public class SelendroidServer implements Runnable{
 				" -app " + targetPath + File.separator + targetBinary;
 		
 		try {
-			child = execCommand(command);
+			child = Util.execCommand(command);
 			Runtime.getRuntime().addShutdownHook(new SWShutdown(child));
 		} catch (IOException e1) {
 			e1.printStackTrace();
@@ -74,8 +95,9 @@ public class SelendroidServer implements Runnable{
 		reader = new BufferedReader(new InputStreamReader(serverErr));
 		String line = null;
 		try {
-			while ((line = reader.readLine()) != null) {
-				String autStart = this.hook.watchStartTime(line);
+			while ((line = reader.readLine()) != null && isRunning) {
+//				System.out.println(line);
+				String autStart = this.stareStartingLog(line);
 				if (autStart != null) {
 					try {
 						this.aut.setStartTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse(autStart));
@@ -83,24 +105,23 @@ public class SelendroidServer implements Runnable{
 						e.printStackTrace();
 					}
 				}
-				if (this.hook.watchServerOn(line)) {
-					this.isServerOn  = true;
-				}
-				
-				if (this.isServerOn) {
-					this.aut.notice();
+				if (this.watchServerOn(line)) {
+					synchronized(lock) {
+						this.isServerOn  = true;
+						lock.notify();
+					}
 				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		synchronized(lock) {
+			lock.notify();
+		}
 	}
 	
-	public void registerWatcher(Watcher hook) {
-		this.hook = hook;
-	}
-	
-	public void registerAut(AbstractAut aut) {
+	public void assignAut(AbstractAut aut) {
 		this.aut = aut;
 	}
 
@@ -108,5 +129,29 @@ public class SelendroidServer implements Runnable{
 	public void run() {
 		this.runSelendroidServer();
 	}
+	
+	private String stareStartingLog(String log) {
+		pattern = Pattern.compile(".*(shell am instrument).*");
+		matcher = pattern.matcher(log);
 
+		if (matcher.matches()) {
+			SimpleDateFormat now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+			Date date = new Date();
+//			System.out.println(now.format(date) + " " + matcher.group(1));
+			return now.format(date);
+		}
+
+		return null;
+	}
+	
+	private boolean watchServerOn(String line) {
+		pattern = Pattern.compile(".*server has been started.*");
+		matcher = pattern.matcher(line);
+		
+		if (matcher.matches()) {
+			return true;
+		}
+		
+		return false;
+	}
 }

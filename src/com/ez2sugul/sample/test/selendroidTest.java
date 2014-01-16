@@ -16,8 +16,11 @@ import org.junit.Test;
 import org.openqa.selenium.Beta;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverBackedSelenium;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.android.library.WebDriverViewClient;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.ScreenshotException;
 
 import com.android.ddmlib.Log;
 
@@ -30,9 +33,15 @@ public class selendroidTest {
 	@BeforeClass
 	public static void initialize() {
 		capa = SelendroidCapabilities.device(aut);
+		capa.setJavascriptEnabled(true);
+
 		try {
 			driver = new SelendroidDriver("http://localhost:5555/wd/hub",	capa);
 		} catch (Exception e) {
+			Throwable cause = e.getCause();
+			if (cause instanceof ScreenshotException) {
+//				((ScreenshotException) cause).getBase64EncodedScreenshot();
+			}
 			e.printStackTrace();
 		}
 	}
@@ -45,16 +54,59 @@ public class selendroidTest {
 	@After
 	public void tearDown() throws Exception {
 	}
-
+	
+	
+	public void pageLoad() {
+		String script = "alert('hello')";
+		
+		driver.switchTo().window("WEBVIEW");
+		WebDriverBackedSelenium selenium = new WebDriverBackedSelenium(driver, "http://localhost:5555/wd/hub");
+		selenium.getEval("");
+		((RemoteWebDriver)driver).executeScript(script);
+	}
+	
 	@Test
+	public void imageLoad() {
+		driver.switchTo().window("WEBVIEW");
+		String script = "return arguments[0].complete && " +
+   "typeof arguments[0].naturalWidth != \"undefined\" && " +
+   "arguments[0].naturalWidth > 0";
+		
+		String cssImg = "img[alt='카페모카(R) Hot/Ice']";
+		
+		WebElement image = driver.findElement(By.cssSelector(cssImg));
+		
+		if (image == null) {
+			System.out.println("image null");
+		}
+		
+		System.out.println(new Date().toString() + " loading done");
+		
+		while(!image.isDisplayed()) {
+			
+		}
+		
+		System.out.println(new Date().toString() + " diplayed");
+		
+//		Object loaded = ((RemoteWebDriver)driver).executeScript(script, image);
+//		
+//		if (loaded instanceof Boolean) {
+//			assertEquals(true, (Boolean)loaded);
+//		}
+	}
+
+	
 	public void brandMenu() {
 		printLog("start");
+		
 		driver.switchTo().window("WEBVIEW");
+		
 		printLog("swtich to webview");
 		System.out.println(driver.getPageSource());
 		String xpathExpression = "//WebView[@id='mWebView']";
 		String idBrand = "gnb_01";
-		WebElement element = driver.findElement(By.id(idBrand));
+		String linkText = "dfb6f953-e8b4-45af-8779-50093ce0a2f5_1375352157441.jpg";
+		WebElement element = driver.findElement(By.partialLinkText(linkText));
 		if (element != null) {
 			printLog("found brand");
 			element.click();
@@ -66,7 +118,6 @@ public class selendroidTest {
 		
 	}
 	
-	@Test
 	public void findUtilBarBack() {
 		String id = "com.skmnc.gifticon:id/utilbar_back";
 		driver.switchTo().window("NATIVE_APP");
