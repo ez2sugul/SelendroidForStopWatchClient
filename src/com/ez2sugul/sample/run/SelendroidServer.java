@@ -78,8 +78,11 @@ public class SelendroidServer implements Runnable {
 		String command = "java -jar " + 
 				selendroidPath + File.separator + 
 				selendroidBinary + 
+				" -port " + aut.getPort() + 
 //				" -installed com.skmnc.gifticon/MainActivity:3.0.4" +
-				" -app " + targetPath + File.separator + targetBinary;
+				" -app " + aut.getPath() + File.separator + aut.getApkName();
+		
+		System.out.println(command);
 		
 		try {
 			child = Util.execCommand(command);
@@ -101,6 +104,7 @@ public class SelendroidServer implements Runnable {
 				if (autStart != null) {
 					try {
 						this.aut.setStartTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse(autStart));
+						System.out.println(autStart);
 					} catch (ParseException e) {
 						e.printStackTrace();
 					}

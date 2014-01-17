@@ -31,7 +31,7 @@ public class StopWatchClientTest {
 	
 	public void test() {
 		StopWatchClient client = new StopWatchClient();
-		client.run();
+		client.runSingleApp();
 	}
 
 }

@@ -1,5 +1,7 @@
 package com.ez2sugul.sample.run;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -18,9 +20,9 @@ public class StopWatchClient {
 		done = lock.newCondition();
 	}
 	
-	public void run() {
+
+	public void runSingleApp() {
 		Thread serverThread = null;
-		Thread autThread = null;
 		
 		server = new SelendroidServer(lock);
 		aut = new AutGifticon();
@@ -50,26 +52,56 @@ public class StopWatchClient {
 			}
 			aut.loadingDone();
 			aut.terminateApp();
-
-			System.out.println("fail to run app");
 		}
 	}
 	
-	@Deprecated
-	public void run2() {
-		server = new SelendroidServer(lock);
-//		aut = new AutGifticon(lock);
-		Thread serverThread = new Thread(server);
-		serverThread.start();
-		Thread autThread = null;
+	public void runMultipleApp() {
+		int appIndex = 0;
+		ArrayList<AbstractAut> auts = new ArrayList<AbstractAut>();
+		auts.add(new AutGifticon());
+		auts.add(new AutTlol());
+		
 		
 		while (true) {
-			if (autThread == null || !autThread.isAlive()) {
-				System.out.println("aut thread restart");
-//				aut = new AutGifticon(lock);
-				server.assignAut(aut);
-//				autThread = new Thread(aut);
-				autThread.start();
+			SelendroidServer server = new SelendroidServer(lock);
+			AbstractAut aut = auts.get(appIndex);
+			server.assignAut(aut);
+			
+			Thread serverThread = new Thread(server);
+			serverThread.start();
+			
+			synchronized(lock) {
+				try {
+					System.out.println("waiting for server start");
+					lock.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			try {
+				aut.runApp();
+			} catch (SeleniumException e) {
+				e.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			aut.loadingDone();
+			aut.terminateApp();
+			
+			server.terminateServer();
+			
+			appIndex = appIndex >= auts.size() - 1 ? 0 : ++appIndex;
+			
+			synchronized(lock) {
+				try {
+					System.out.println("waiting for server stop");
+					lock.wait();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -79,7 +111,7 @@ public class StopWatchClient {
 	 */
 	public static void main(String[] args) {
 		StopWatchClient client = new StopWatchClient();
-		client.run();
+		client.runMultipleApp();
 	}
 
 }

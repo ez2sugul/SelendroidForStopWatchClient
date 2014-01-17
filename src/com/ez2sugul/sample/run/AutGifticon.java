@@ -28,7 +28,7 @@ public class AutGifticon extends AbstractAut {
 	private Lock lock;
 	
 	public AutGifticon() {
-		super("com.skmnc.gifticon", "com.skmnc.gifticon-1_debug.apk", "3.0.4");
+		super("/Users/skplanet/Documents/Projects/robotium", "com.skmnc.gifticon", "com.skmnc.gifticon-1_debug.apk", "3.0.4", 5556);
 	}
 
 	@Override
@@ -40,7 +40,7 @@ public class AutGifticon extends AbstractAut {
 		if (element != null) {
 			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 			Date now = new Date();
-			System.out.println("elapsed milliseconds : " + timeDiff(this.startTime, now));
+			System.out.println(this.apkName + " elapsed milliseconds : " + timeDiff(this.startTime, now));
 			element.click();
 			return true;
 		}
@@ -100,18 +100,6 @@ public class AutGifticon extends AbstractAut {
 		synchronized(lock) {
 			lock.notify();
 		}
-	}
-
-	@Override
-	public boolean terminateApp() {
-		if (driver != null) {
-			driver.quit();
-			
-			driver = null;
-			
-		}
-		
-		return true;
 	}
 
 	@Deprecated
