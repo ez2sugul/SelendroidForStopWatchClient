@@ -56,15 +56,30 @@ public class StopWatchClient {
 	
 	public void runMultipleApp() {
 		int appIndex = 0;
+		Lock lock = null;
 		ArrayList<AbstractAut> auts = new ArrayList<AbstractAut>();
+		ArrayList<SelendroidServer> servers = new ArrayList<SelendroidServer>();
+		ArrayList<Lock> locks = new ArrayList<Lock>();
+		
+		/**
+		 * generate auts
+		 */
 		auts.add(new AutGifticon());
 		auts.add(new AutTlol());
 		
+		for (int i = 0; i < auts.size(); i++) {
+			// create lock object that is used at selendroid server
+			locks.add(new ReentrantLock());
+			// create selendroid server and assign lock object
+			servers.add(new SelendroidServer(locks.get(i)));
+			// assign aut to selendroid server
+			servers.get(i).assignAut(auts.get(i));
+		}
+		
 		
 		while (true) {
-			SelendroidServer server = new SelendroidServer(lock);
 			AbstractAut aut = auts.get(appIndex);
-			server.assignAut(aut);
+			server = servers.get(appIndex);
 			
 			Thread serverThread = new Thread(server);
 			serverThread.start();
@@ -72,7 +87,7 @@ public class StopWatchClient {
 			synchronized(lock) {
 				try {
 					System.out.println("waiting for server start");
-					lock.wait();
+					locks.get(appIndex).wait();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -96,7 +111,7 @@ public class StopWatchClient {
 			synchronized(lock) {
 				try {
 					System.out.println("waiting for server stop");
-					lock.wait();
+					locks.get(appIndex).wait();
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
