@@ -1,7 +1,6 @@
 package com.ez2sugul.sample.run;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
