@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.locks.ReentrantLock;
 
 import io.selendroid.SelendroidCapabilities;
 import io.selendroid.SelendroidConfiguration;
@@ -18,8 +19,8 @@ import org.junit.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.ScreenshotException;
 
-import com.ez2sugul.sample.run.AutTlol;
-import com.ez2sugul.sample.run.SelendroidServer;
+import com.ez2sugul.sample.aut.AutTlol;
+import com.ez2sugul.sample.client.SelendroidServer;
 import com.thoughtworks.selenium.SeleniumException;
 
 public class AutTlolTest {
@@ -29,7 +30,7 @@ public class AutTlolTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		tlol = new AutTlol();
-		
+		tlol.setLock(new ReentrantLock());
 	}
 
 	@AfterClass

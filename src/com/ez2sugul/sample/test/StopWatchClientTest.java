@@ -8,7 +8,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.ez2sugul.sample.run.StopWatchClient;
+import com.ez2sugul.sample.aut.AutGifticon;
+import com.ez2sugul.sample.client.SelendroidServer;
+import com.ez2sugul.sample.client.StopWatchClient;
 
 public class StopWatchClientTest {
 
@@ -31,7 +33,7 @@ public class StopWatchClientTest {
 	
 	public void test() {
 		StopWatchClient client = new StopWatchClient();
-		client.runSingleApp();
+		client.runSingleApp(new AutGifticon());
 	}
 
 }

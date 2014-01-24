@@ -1,6 +1,7 @@
 package com.ez2sugul.sample.util;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.openqa.selenium.By;
@@ -20,6 +21,12 @@ public class Util {
 		Log.d("selendroid", msg);
 	}
 	
+	public static String autLog(String msg) {
+		SimpleDateFormat now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+		Date date = new Date();
+		return "[" + now.format(date) + "] " + msg;
+	}
+	
 	public static String getCurrentMethodName(int n) {
 		StackTraceElement[] ste = Thread.currentThread().getStackTrace();
 		
@@ -33,5 +40,10 @@ public class Util {
 		diff = finish.getTime() - start.getTime();
 		
 		return element;
+	}
+	
+	public static long timeDiff(Date old, Date now) {
+		long millisecond = now.getTime() - old.getTime();
+		return millisecond;
 	}
 }
